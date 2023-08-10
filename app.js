@@ -1,3 +1,4 @@
+// Canvas Draw
 const canvas = document.querySelector("canvas");
 const toolBtns = document.querySelectorAll(".tool");
 const fillColor = document.querySelector("#fill-color");
@@ -132,15 +133,20 @@ canvas.addEventListener("mousedown", startDraw);
 canvas.addEventListener("mousemove", drawing);
 canvas.addEventListener("mouseup", () => (isDrawing = false));
 
+
+
+
+
+
 // Gesture Cursor
-const leftyCheckbox = document.querySelector('#hand_choice');
-leftyCheckbox.addEventListener('change', () => {
-	OPTIONS.PREFERRED_HAND = leftyCheckbox.checked ? 'left' : 'right';
+const leftyCheckbox = document.querySelector("#hand_choice");
+leftyCheckbox.addEventListener("change", () => {
+  OPTIONS.PREFERRED_HAND = leftyCheckbox.checked ? "left" : "right";
 });
 
 const OPTIONS = {
   IS_DEBUG_MODE: false,
-  PREFERRED_HAND: leftyCheckbox.checked ? 'left' : 'right',
+  PREFERRED_HAND: leftyCheckbox.checked ? "left" : "right",
   PINCH_DELAY_MS: 60,
 };
 
@@ -152,11 +158,11 @@ const state = {
 };
 
 const PINCH_EVENTS = {
-  START: 'pinch_start',
-  MOVE: 'pinch_move',
-  STOP: 'pinch_stop',
-  PICK_UP: 'pinch_pick_up',
-  DROP: 'pinch_drop',
+  START: "pinch_start",
+  MOVE: "pinch_move",
+  STOP: "pinch_stop",
+  PICK_UP: "pinch_pick_up",
+  DROP: "pinch_drop",
 };
 
 function triggerEvent({ eventName, eventData }) {
@@ -164,14 +170,12 @@ function triggerEvent({ eventName, eventData }) {
   document.dispatchEvent(event);
 }
 
-const videoElement = document.querySelector('.input_video');
-const debugCanvas = document.querySelector('.output_canvas');
-const debugCanvasCtx = debugCanvas.getContext('2d');
+const videoElement = document.querySelector(".input_video");
+const debugCanvas = document.querySelector(".output_canvas");
+const debugCanvasCtx = debugCanvas.getContext("2d");
 
-const cursor = document.querySelector('.cursor');
-const movableElements = [
-  ...document.querySelectorAll('.movable'),
-];
+const cursor = document.querySelector(".cursor");
+const movableElements = [...document.querySelectorAll(".movable")];
 
 const handParts = {
   wrist: 0,
@@ -189,13 +193,20 @@ function getElementCoords(element) {
   const elementLeft = rect.left / window.innerWidth;
   const elementRight = rect.right / window.innerWidth;
   return { elementTop, elementBottom, elementLeft, elementRight };
-};
+}
 
-function isElementPinched({ pinchX, pinchY, elementTop, elementBottom, elementLeft, elementRight }) {
+function isElementPinched({
+  pinchX,
+  pinchY,
+  elementTop,
+  elementBottom,
+  elementLeft,
+  elementRight,
+}) {
   const isPinchInXRange = elementLeft <= pinchX && pinchX <= elementRight;
   const isPinchInYRange = elementTop <= pinchY && pinchY <= elementBottom;
   return isPinchInXRange && isPinchInYRange;
-};
+}
 
 function getPinchedElement({ pinchX, pinchY, elements }) {
   let grabbedElement;
@@ -220,7 +231,7 @@ function getPinchedElement({ pinchX, pinchY, elements }) {
     }
   }
   return grabbedElement;
-};
+}
 
 function log(...args) {
   if (OPTIONS.IS_DEBUG_MODE) {
@@ -230,8 +241,11 @@ function log(...args) {
 
 function getCurrentHand(handData) {
   const isHandAvailable = !!handData.multiHandLandmarks?.[0];
-  if (!isHandAvailable) { return null; }
-  const mirroredHand = handData.multiHandedness[0].label === 'Left' ? 'right' : 'left';
+  if (!isHandAvailable) {
+    return null;
+  }
+  const mirroredHand =
+    handData.multiHandedness[0].label === "Left" ? "right" : "left";
   return mirroredHand;
 }
 
@@ -244,9 +258,10 @@ function isPinched(handData) {
       y: Math.abs(fingerTip.y - thumbTip.y),
       z: Math.abs(fingerTip.z - thumbTip.z),
     };
-    const areFingersCloseEnough = distance.x < 0.08 && distance.y < 0.08 && distance.z < 0.11;
+    const areFingersCloseEnough =
+      distance.x < 0.08 && distance.y < 0.08 && distance.z < 0.11;
     log(distance);
-    log({isPinched: areFingersCloseEnough});
+    log({ isPinched: areFingersCloseEnough });
     return areFingersCloseEnough;
   }
   return false;
@@ -262,18 +277,28 @@ function convertCoordsToDomPosition({ x, y }) {
 function updateDebugCanvas(handData) {
   debugCanvasCtx.save();
   debugCanvasCtx.clearRect(0, 0, debugCanvas.width, debugCanvas.height);
-  debugCanvasCtx.drawImage(handData.image, 0, 0, debugCanvas.width, debugCanvas.height);
+  debugCanvasCtx.drawImage(
+    handData.image,
+    0,
+    0,
+    debugCanvas.width,
+    debugCanvas.height
+  );
   if (handData.multiHandLandmarks) {
     for (const landmarks of handData.multiHandLandmarks) {
-      drawConnectors(debugCanvasCtx, landmarks, HAND_CONNECTIONS, {color: '#0ff', lineWidth: 5});
-      drawLandmarks(debugCanvasCtx, landmarks, {color: '#f0f', lineWidth: 2});
+      drawConnectors(debugCanvasCtx, landmarks, HAND_CONNECTIONS, {
+        color: "#0ff",
+        lineWidth: 5,
+      });
+      drawLandmarks(debugCanvasCtx, landmarks, { color: "#f0f", lineWidth: 2 });
     }
   }
   debugCanvasCtx.restore();
 }
 
 function getCursorCoords(handData) {
-  const { x, y, z } = handData.multiHandLandmarks[0][handParts.indexFinger.middle];
+  const { x, y, z } =
+    handData.multiHandLandmarks[0][handParts.indexFinger.middle];
   const mirroredXCoord = -x + 1; /* due to camera mirroring */
   return { x: mirroredXCoord, y, z };
 }
@@ -283,8 +308,12 @@ function isPrimaryHandAvailable(handData) {
 }
 
 function onResults(handData) {
-  if (!handData) { return; }
-  if (OPTIONS.IS_DEBUG_MODE) { updateDebugCanvas(handData); }
+  if (!handData) {
+    return;
+  }
+  if (OPTIONS.IS_DEBUG_MODE) {
+    updateDebugCanvas(handData);
+  }
 
   updateCursor(handData);
   updatePinchState(handData);
@@ -293,7 +322,9 @@ function onResults(handData) {
 function updateCursor(handData) {
   if (isPrimaryHandAvailable(handData)) {
     const cursorCoords = getCursorCoords(handData);
-    if (!cursorCoords) { return; }
+    if (!cursorCoords) {
+      return;
+    }
     const { x, y } = convertCoordsToDomPosition(cursorCoords);
     cursor.style.transform = `translate(${x}, ${y})`;
   }
@@ -344,23 +375,39 @@ document.addEventListener(PINCH_EVENTS.DROP, onDrop);
 function onPinchStart(eventInfo) {
   const cursorCoords = eventInfo.detail;
 
+  console.log("Pinch started!");
+
   state.grabbedElement = getPinchedElement({
     pinchX: cursorCoords.x,
     pinchY: cursorCoords.y,
     elements: movableElements,
   });
   if (state.grabbedElement) {
+    // Включаем режим рисования при начале щипка
     triggerEvent({
       eventName: PINCH_EVENTS.PICK_UP,
       eventData: state.grabbedElement.domNode,
     });
   }
 
-  document.body.classList.add('is-pinched');
+  document.body.classList.add("is-pinched");
+}
+
+// Получить координаты кончика пальца
+function getFingerTipCoords(handData) {
+  // Берем координаты из landmarks
+  const fingerTip = handData.landmarks[8];
+
+  return {
+    x: fingerTip.x,
+    y: fingerTip.y,
+  };
 }
 
 function onPinchMove(eventInfo) {
+
   const cursorCoords = eventInfo.detail;
+  console.log("Pinch Move")
 
   if (state.grabbedElement) {
     state.grabbedElement.coords = {
@@ -374,8 +421,11 @@ function onPinchMove(eventInfo) {
 }
 
 function onPinchStop() {
-  document.body.classList.remove('is-pinched');
+  document.body.classList.remove("is-pinched");
+  console.log("Pinch stopped!");
   if (state.grabbedElement) {
+    // Останавливаем режим рисования при завершении щипка
+    stopDrawing();
     triggerEvent({
       eventName: PINCH_EVENTS.DROP,
       eventData: state.grabbedElement.domNode,
@@ -385,50 +435,38 @@ function onPinchStop() {
 
 function onPickUp(eventInfo) {
   const element = eventInfo.detail;
-  state.lastGrabbedElement?.style.removeProperty('z-index');
+  state.lastGrabbedElement?.style.removeProperty("z-index");
   state.lastGrabbedElement = element;
   element.style.zIndex = 1;
-  element.classList.add('element_dragging');
-};
+  element.classList.add("element_dragging");
+}
 
 function onDrop(eventInfo) {
   const element = eventInfo.detail;
   state.isDragging = false;
   state.grabbedElement = undefined;
-  element.classList.remove('element_dragging');
-};
+  element.classList.remove("element_dragging");
+}
 
-const hands = new Hands({locateFile: (file) => {
-  return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-}});
+const hands = new Hands({
+  locateFile: (file) => {
+    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+  },
+});
 hands.setOptions({
   maxNumHands: 1,
   modelComplexity: 1,
   minDetectionConfidence: 0.5,
-  minTrackingConfidence: 0.5
+  minTrackingConfidence: 0.5,
 });
 hands.onResults(onResults);
 
 const camera = new Camera(videoElement, {
   onFrame: async () => {
-    await hands.send({image: videoElement});
+    await hands.send({ image: videoElement });
   },
   width: 1280,
-  height: 720
+  height: 720,
 });
 camera.start();
-
-function startDebug() {
-  debugCanvas.style.display = 'block';
-  document.head.innerHTML += `
-    <style>
-      body.is-pinched {
-        background: gold;
-      }
-    </style>
-  `;
-}
-if (OPTIONS.IS_DEBUG_MODE) {
-  startDebug();
-}
 
